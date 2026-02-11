@@ -5,7 +5,8 @@ export interface Project {
   name: string;
   apiUrl?: string;
   userNumbersApiUrl: string;
-  apiKey?: string;
+  apiKey?: string; // API key used BY this project to call external APIs
+  externalApiKey?: string; // API key used FOR external APIs to call this API
   _count?: {
     contacts: number;
   };
@@ -53,5 +54,16 @@ export const projectApi = {
   // Delete a project
   delete: async (id: number): Promise<void> => {
     await apiClient.delete(`/projects/${id}`);
+  },
+
+  // Generate API key for a project
+  generateApiKey: async (id: number): Promise<{ apiKey: string }> => {
+    const response = await apiClient.post<{ apiKey: string }>(`/projects/${id}/api-key/generate`);
+    return response.data;
+  },
+
+  // Revoke API key for a project
+  revokeApiKey: async (id: number): Promise<void> => {
+    await apiClient.delete(`/projects/${id}/api-key`);
   },
 };
