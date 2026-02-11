@@ -79,7 +79,7 @@ export default function ConversationList({
                       e.stopPropagation();
                       router.push(`/chat/contact/${conversation.contact.id}`);
                     }}
-                    className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center flex-shrink-0 hover:opacity-80 transition-opacity"
+                    className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center shrink-0 hover:opacity-80 transition-opacity"
                   >
                     <span className="text-white font-semibold text-lg">
                       {(conversation.contact.customName || conversation.contact.name)?.[0]?.toUpperCase() || '?'}
@@ -89,9 +89,48 @@ export default function ConversationList({
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-1">
-                      <h3 className="font-semibold truncate text-gray-900 dark:text-white">
-                        {conversation.contact.customName || conversation.contact.name || conversation.contact.waId}
-                      </h3>
+                      <div className="flex items-center gap-2 flex-1">
+                        <h3 className="font-semibold truncate text-gray-900 dark:text-white">
+                          {conversation.contact.customName || conversation.contact.name || conversation.contact.waId}
+                        </h3>
+                        {/* 24h Window Indicator */}
+                        {conversation.isWithin24Hours !== undefined && (
+                          <span
+                            className="shrink-0"
+                            title={
+                              conversation.isWithin24Hours
+                                ? 'Dentro da janela de 24h - pode enviar mensagens normais'
+                                : 'Fora da janela de 24h - apenas templates funcionarão'
+                            }
+                          >
+                            {conversation.isWithin24Hours ? (
+                              <svg
+                                className="w-5 h-5 text-green-600 dark:text-green-500"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                className="w-5 h-5 text-red-600 dark:text-red-500"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            )}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                         {formatDistanceToNow(new Date(conversation.lastMessageAt), {
                           addSuffix: true,

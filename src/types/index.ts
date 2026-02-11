@@ -36,6 +36,8 @@ export interface Conversation {
   lastMessageAt: string;
   unreadCount: number;
   messages: Message[];
+  isWithin24Hours?: boolean;
+  lastRelevantMessageTime?: string | null;
   createdAt: string;
   updatedAt: string;
 }

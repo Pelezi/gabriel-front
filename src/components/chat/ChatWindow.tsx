@@ -19,6 +19,8 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
     const [sending, setSending] = useState(false);
     const [loading, setLoading] = useState(true);
     const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+    const [showWarningModal, setShowWarningModal] = useState(false);
+    const [pendingMessage, setPendingMessage] = useState<string>('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const prevMessageCountRef = useRef(0);
 
@@ -65,11 +67,26 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
         e.preventDefault();
         if (!input.trim() || sending) return;
 
+        // Check if outside 24h window
+        if (conversation.isWithin24Hours === false) {
+            // Show warning modal
+            setPendingMessage(input);
+            setShowWarningModal(true);
+            return;
+        }
+
+        // Send directly if within 24h window
+        await sendMessageConfirmed(input);
+    }
+
+    async function sendMessageConfirmed(textToSend: string) {
         setSending(true);
         try {
-            await sendMessage(conversation.id, input, replyingTo?.id);
+            await sendMessage(conversation.id, textToSend, replyingTo?.id);
             setInput('');
+            setPendingMessage('');
             setReplyingTo(null);
+            setShowWarningModal(false);
             await loadMessages(); // Reload to get the sent message
         } catch (error) {
             console.error('Error sending message:', error);
@@ -77,6 +94,15 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
         } finally {
             setSending(false);
         }
+    }
+
+    function handleConfirmSend() {
+        sendMessageConfirmed(pendingMessage);
+    }
+
+    function handleCancelSend() {
+        setShowWarningModal(false);
+        setPendingMessage('');
     }
 
     function handleReply(message: Message) {
@@ -93,6 +119,65 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
 
     return (
         <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+            {/* Warning Modal */}
+            {showWarningModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                        <div className="flex items-start gap-3 mb-4">
+                            <div className="shrink-0">
+                                <svg
+                                    className="w-6 h-6 text-yellow-600 dark:text-yellow-500"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                    />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                    Atenção: Fora da Janela de 24h
+                                </h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                    Já se passaram mais de 24 horas desde a última mensagem recebida ou template enviado. 
+                                    Enviar mensagens normais fora desse período provavelmente falhará devido às políticas do WhatsApp.
+                                </p>
+                                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    Recomendações:
+                                </p>
+                                <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1 mb-4">
+                                    <li>Use uma mensagem template aprovada, ou</li>
+                                    <li>Aguarde o contato enviar uma mensagem primeiro</li>
+                                </ul>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                    Deseja tentar enviar mesmo assim?
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={handleCancelSend}
+                                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleConfirmSend}
+                                disabled={sending}
+                                className="px-4 py-2 bg-yellow-600 text-white hover:bg-yellow-700 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition-colors"
+                            >
+                                {sending ? 'Enviando...' : 'Enviar Mesmo Assim'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4 flex items-center gap-3">
                 {onBack && (
