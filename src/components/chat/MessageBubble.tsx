@@ -63,7 +63,7 @@ export default function MessageBubble({ message, onReply, reactions = [] }: Mess
                 <p className={`font-semibold text-xs ${isOutbound ? 'text-green-100' : 'text-gray-600 dark:text-gray-300'}`}>
                   {message.replyTo.direction === 'OUTBOUND' ? 'Você' : (message.replyTo.contact?.name || message.contact?.name || 'Contato')}
                 </p>
-                <p className={`line-clamp-2 text-xs break-words ${isOutbound ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                <p className={`line-clamp-2 text-xs wrap-break-words ${isOutbound ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>
                   {message.replyTo.textBody || message.replyTo.caption || getMessageTypeLabel(message.replyTo.type)}
                 </p>
               </div>
@@ -113,15 +113,15 @@ function MessageContent({ message, isOutbound }: { message: Message; isOutbound:
         return (
           <div className="space-y-2">
             {message.templateHeader && (
-              <p className="font-bold text-base whitespace-pre-wrap break-words">
+              <p className="font-bold text-base whitespace-pre-wrap wrap-break-words">
                 {message.templateHeader}
               </p>
             )}
             {message.textBody && (
-              <p className="whitespace-pre-wrap break-words">{message.textBody}</p>
+              <p className="whitespace-pre-wrap wrap-break-words">{message.textBody}</p>
             )}
             {message.templateFooter && (
-              <p className={`text-xs whitespace-pre-wrap break-words mt-2 ${
+              <p className={`text-xs whitespace-pre-wrap wrap-break-words mt-2 ${
                 isOutbound ? 'text-green-200' : 'text-gray-500 dark:text-gray-400'
               }`}>
                 {message.templateFooter}
@@ -131,22 +131,25 @@ function MessageContent({ message, isOutbound }: { message: Message; isOutbound:
         );
       }
       // Regular text message
-      return <p className="whitespace-pre-wrap break-words">{message.textBody}</p>;
+      return <p className="whitespace-pre-wrap wrap-break-words">{message.textBody}</p>;
 
     case 'IMAGE':
       return (
         <div>
-          {message.mediaLocalPath && (
+          {message.mediaLocalPath ? (
             <Image
-              src={`/../../../../whatsapp-pelezi-bot-api/public/${message.mediaLocalPath}`}
+              src={message.mediaLocalPath}
               alt="Image"
               width={300}
               height={300}
               className="rounded-lg mb-2"
+              unoptimized
             />
-          )}
+          ) : message.textBody ? (
+            <p className="text-red-500 dark:text-red-400 text-sm italic mb-2">{message.textBody}</p>
+          ) : null}
           {message.caption && (
-            <p className="whitespace-pre-wrap break-words">{message.caption}</p>
+            <p className="whitespace-pre-wrap wrap-break-words">{message.caption}</p>
           )}
         </div>
       );
@@ -154,15 +157,17 @@ function MessageContent({ message, isOutbound }: { message: Message; isOutbound:
     case 'VIDEO':
       return (
         <div>
-          {message.mediaLocalPath && (
+          {message.mediaLocalPath ? (
             <video
-              src={`/../../../../whatsapp-pelezi-bot-api/public/${message.mediaLocalPath}`}
+              src={message.mediaLocalPath}
               controls
               className="rounded-lg mb-2 max-w-full"
             />
-          )}
+          ) : message.textBody ? (
+            <p className="text-red-500 dark:text-red-400 text-sm italic mb-2">{message.textBody}</p>
+          ) : null}
           {message.caption && (
-            <p className="whitespace-pre-wrap break-words">{message.caption}</p>
+            <p className="whitespace-pre-wrap wrap-break-words">{message.caption}</p>
           )}
         </div>
       );
@@ -170,47 +175,60 @@ function MessageContent({ message, isOutbound }: { message: Message; isOutbound:
     case 'AUDIO':
       return (
         <div className="flex items-center gap-2">
-          <Volume2 className="w-5 h-5" />
-          {message.mediaLocalPath && (
-            <audio src={message.mediaLocalPath} controls className="max-w-full" />
-          )}
-          <span className="text-sm">{message.isVoice ? 'Áudio' : 'Arquivo de áudio'}</span>
+          {message.mediaLocalPath ? (
+            <>
+              <Volume2 className="w-5 h-5" />
+              <audio src={message.mediaLocalPath} controls className="max-w-full" />
+              <span className="text-sm">{message.isVoice ? 'Áudio' : 'Arquivo de áudio'}</span>
+            </>
+          ) : message.textBody ? (
+            <p className="text-red-500 dark:text-red-400 text-sm italic">{message.textBody}</p>
+          ) : null}
         </div>
       );
 
     case 'STICKER':
       return (
         <div>
-          {message.mediaLocalPath && (
+          {message.mediaLocalPath ? (
             <Image
               src={message.mediaLocalPath}
               alt="Sticker"
               width={150}
               height={150}
               className="rounded"
+              unoptimized
             />
-          )}
+          ) : message.textBody ? (
+            <p className="text-red-500 dark:text-red-400 text-sm italic">{message.textBody}</p>
+          ) : null}
         </div>
       );
 
     case 'DOCUMENT':
       return (
-        <a
-          href={message.mediaLocalPath || '#'}
-          download
-          className={`flex items-center gap-2 ${
-            isOutbound ? 'text-white hover:underline' : 'text-blue-600 hover:underline'
-          }`}
-        >
-          <FileText className="w-5 h-5" />
-          <span>{message.mediaFilename || 'Document'}</span>
-        </a>
+        <div>
+          {message.mediaLocalPath ? (
+            <a
+              href={message.mediaLocalPath || '#'}
+              download
+              className={`flex items-center gap-2 ${
+                isOutbound ? 'text-white hover:underline' : 'text-blue-600 hover:underline'
+              }`}
+            >
+              <FileText className="w-5 h-5" />
+              <span>{message.mediaFilename || 'Document'}</span>
+            </a>
+          ) : message.textBody ? (
+            <p className="text-red-500 dark:text-red-400 text-sm italic">{message.textBody}</p>
+          ) : null}
+        </div>
       );
 
     case 'LOCATION':
       return (
         <div className="flex items-start gap-2">
-          <MapPin className="w-5 h-5 flex-shrink-0 mt-1" />
+          <MapPin className="w-5 h-5 shrink-0 mt-1" />
           <div>
             <p className="font-semibold">Localização compartilhada</p>
             <a
@@ -237,9 +255,21 @@ function MessageContent({ message, isOutbound }: { message: Message; isOutbound:
 
     case 'UNSUPPORTED':
       return (
-        <p className="text-sm italic">
-          {isOutbound ? 'Mensagem não suportada' : 'Tipo de mensagem não suportado'}
-        </p>
+        <div>
+          {message.textBody ? (
+            <p className={`text-sm ${
+              message.textBody.includes('[❌ Erro') || message.textBody.includes('[Erro')
+                ? 'text-red-500 dark:text-red-400'
+                : 'text-gray-600 dark:text-gray-400'
+            }`}>
+              {message.textBody}
+            </p>
+          ) : (
+            <p className="text-sm italic text-gray-600 dark:text-gray-400">
+              {isOutbound ? 'Mensagem não suportada' : 'Tipo de mensagem não suportado'}
+            </p>
+          )}
+        </div>
       );
 
     default:
