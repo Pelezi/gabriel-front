@@ -67,15 +67,24 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
 
     const handleTestNotification = async () => {
         try {
-            // First, show a browser notification directly to test if notifications work
-            if (Notification.permission === 'granted') {
-                new Notification('Teste de Notificação', {
-                    body: 'Notificações estão funcionando!',
-                    icon: '/icon-192x192.png',
-                });
+            // First, show a local browser notification using the service worker API.
+            // Android Chrome can throw on `new Notification(...)` in some contexts.
+            if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    await registration.showNotification('Teste de Notificação', {
+                        body: 'Notificações estão funcionando!',
+                        icon: '/icon-192x192.png',
+                        badge: '/badge-72x72.png',
+                        tag: 'local-notification-test',
+                        data: { url: '/chat' },
+                    });
+                } catch (localNotificationError) {
+                    console.warn('Local notification preview failed:', localNotificationError);
+                }
             }
-            
-            // Then send the server-side push notification
+
+            // Always send the server-side push notification test.
             await sendTestNotification(userId);
             toast.success('Notificação de teste enviada!');
         } catch (err) {
