@@ -182,8 +182,8 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
             {/* Help Text */}
             <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
                 <p className="text-xs text-blue-800 dark:text-blue-200">
-                    O botão de teste envia duas notificações: uma direta (instantânea) e uma push (pode levar alguns segundos).
-                    {!isSubscribed && ' Você precisa ativar as notificações primeiro!'}gador ou muda de aba.
+                    O botão de teste envia uma notificação push (pode levar alguns segundos).
+                    {!isSubscribed && ' Você precisa ativar as notificações primeiro.'}
                     Você receberá notificações de novas mensagens recebidas e enviadas através do bot.
                 </p>
             </div>

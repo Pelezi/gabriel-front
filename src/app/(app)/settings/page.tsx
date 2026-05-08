@@ -2,7 +2,6 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import NotificationSettings from '@/components/NotificationSettings';
-import { NotificationDebug } from '@/components/NotificationDebug';
 
 export default function SettingsPage() {
     const { user } = useAuth();
@@ -23,11 +22,6 @@ export default function SettingsPage() {
                     {/* Notifications Section */}
                     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <NotificationSettings userId={user?.id ? parseInt(String(user.id)) : undefined} />
-                    </div>
-
-                    {/* Notification Debug Section */}
-                    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <NotificationDebug />
                     </div>
 
                     {/* Account Information */}
