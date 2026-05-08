@@ -252,14 +252,14 @@ export class NotificationService {
     /**
      * Send a test notification
      */
-    public async sendTestNotification(): Promise<void> {
+    public async sendTestNotification(userId?: number): Promise<void> {
         try {
             const response = await fetch(`${API_URL}/notifications/test`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({}),
+                body: JSON.stringify(userId ? { userId } : {}),
             });
             
             if (!response.ok) {

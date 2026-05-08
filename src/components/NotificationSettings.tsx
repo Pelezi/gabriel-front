@@ -76,7 +76,7 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
             }
             
             // Then send the server-side push notification
-            await sendTestNotification();
+            await sendTestNotification(userId);
             toast.success('Notificação de teste enviada!');
         } catch (err) {
             console.error('Failed to send test notification:', err);

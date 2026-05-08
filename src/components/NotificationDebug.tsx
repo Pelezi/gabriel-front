@@ -30,8 +30,9 @@ export function NotificationDebug() {
             // 1. Check API connectivity
             addLog('info', 'Checking API connectivity...');
             const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3005/api/v1';
+            const healthUrl = apiUrl.replace(/\/api\/v1\/?$/, '/api/v1/health');
             try {
-                const healthResponse = await fetch(`${apiUrl}/../health`, {
+                const healthResponse = await fetch(healthUrl, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 });

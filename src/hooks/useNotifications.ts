@@ -12,7 +12,7 @@ export interface UseNotificationsReturn {
     subscribe: (userId: number) => Promise<void>;
     unsubscribe: () => Promise<void>;
     requestPermission: () => Promise<NotificationPermission>;
-    sendTestNotification: () => Promise<void>;
+    sendTestNotification: (userId?: number) => Promise<void>;
 }
 
 export function useNotifications(): UseNotificationsReturn {
@@ -100,10 +100,10 @@ export function useNotifications(): UseNotificationsReturn {
         }
     }, []);
 
-    const sendTestNotification = useCallback(async () => {
+    const sendTestNotification = useCallback(async (userId?: number) => {
         try {
             setError(null);
-            await notificationService.sendTestNotification();
+            await notificationService.sendTestNotification(userId);
         } catch (err) {
             console.error('Error sending test notification:', err);
             setError(err instanceof Error ? err.message : 'Failed to send test notification');
