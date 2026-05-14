@@ -1,0 +1,22 @@
+# DEV DOCKERFILE — do not use in production
+# Source code is mounted as a volume by docker-compose.dev.yml for hot reload
+FROM node:20-alpine
+
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Install all dependencies (including devDependencies)
+COPY package*.json ./
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm ci
+
+# Source is NOT copied here — it will be bind-mounted at runtime.
+# Bind to all interfaces so the container port is reachable from the host.
+ENV HOSTNAME=0.0.0.0
+
+# Call next dev directly instead of `npm run dev` because that script uses
+# dotenv CLI to load .env.local — Docker already injects those vars via env_file.
+CMD ["npx", "next", "dev", "--webpack"]
